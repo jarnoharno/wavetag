@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QVector>
+#include <QBrush>
 
 class Editor : public QWidget
 {
@@ -15,8 +16,12 @@ signals:
 
 public slots:
 
+protected:
+    void paintEvent(QPaintEvent* event);
+
 private:
     QVector<float> buffer;
+    QBrush brush = QBrush(QColor(0,0,0));
 };
 
 #endif // EDITOR_H

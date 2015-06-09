@@ -29,7 +29,7 @@ private:
     Ui::MainWindow *ui;
     QAudioDecoder *decoder;
     QVector<float> tmpBuffer;
-    static const float scale = 1.0f / (1 << 15);
+    static constexpr float scale = 1.0f / (1 << 15);
 };
 
 #endif // MAINWINDOW_H

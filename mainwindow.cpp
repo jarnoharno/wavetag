@@ -53,7 +53,9 @@ void MainWindow::openFileDialog()
                                                     QDir::currentPath(),
                                                     tr("Audio Files (*)"));
     qDebug() << fileName;
-    open(fileName);
+    if (!fileName.isEmpty()) {
+        open(fileName);
+    }
 }
 
 void MainWindow::readBuffer()
@@ -75,5 +77,5 @@ void MainWindow::decodeError(QAudioDecoder::Error error)
 void MainWindow::decodeFinished()
 {
     ui->editor->setBuffer(tmpBuffer);
-    qDebug() << "done"
+    qDebug() << "done";
 }
