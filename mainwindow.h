@@ -5,6 +5,7 @@
 #include <QAudioDecoder>
 #include <QVector>
 #include <limits>
+#include <vector>
 
 namespace Ui {
 class MainWindow;
@@ -28,7 +29,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
     QAudioDecoder *decoder;
-    QVector<float> tmpBuffer;
+    std::vector<float> tmpBuffer;
 };
 
 #endif // MAINWINDOW_H

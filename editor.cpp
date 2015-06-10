@@ -11,9 +11,9 @@ Editor::Editor(QWidget *parent) : QWidget(parent)
 {
 }
 
-void Editor::setBuffer(QVector<float> buf)
+void Editor::setBuffer(const std::vector<float>& buf)
 {
-    buffer = buf;
+    buffer = MinMaxTree(buf.cbegin(), buf.cend());
     clipStart = 0.f;
     clipLength = buffer.length()/44100.f;
     update();
@@ -49,7 +49,7 @@ void Editor::paintEvent(QPaintEvent *event)
     float h2 = p.device()->height()/2;
 
     int x3 = 0;
-    int z3 = (1.0f-buffer[0])*h2;
+    int z3 = (1.0f-buffer[0].mn)*h2;
 
     int space = w/(clipLength*44100.f);
 
@@ -60,19 +60,24 @@ void Editor::paintEvent(QPaintEvent *event)
         int i2 = n*t2/t;
         if (i1 == i2) continue;
 
+        const MinMax<float>& mm = buffer.range(i1,i2);
+        float y1 = mm.mn;
+        float y2 = mm.mx;
+        /*
         float y1 = buffer[i1];
         float y2 = buffer[i1];
         for (int j = i1+1; j < i2; ++j) {
             y1 = std::min(y1,buffer[j]);
             y2 = std::max(y2,buffer[j]);
         }
+        */
 
         p.setPen(Qt::black);
         // draw connecting line
-        int z0 = (1.f-buffer[i1])*h2;
+        int z0 = (1.f-buffer[i1].mn)*h2;
         if (drawLines) accurateDrawLine(p,x3,z3,x,z0);
         x3 = x;
-        z3 = (1.f-buffer[i2-1])*h2;
+        z3 = (1.f-buffer[i2-1].mn)*h2;
 
         // draw extrema
         int z1 = (1.f-y1)*h2;

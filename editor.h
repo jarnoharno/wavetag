@@ -1,19 +1,21 @@
 #ifndef EDITOR_H
 #define EDITOR_H
 
+#include "segtree.h"
 #include <QWidget>
 #include <QVector>
 #include <QBrush>
 #include <QPen>
 #include <QPainter>
 #include <QBitmap>
+#include <vector>
 
 class Editor : public QWidget
 {
     Q_OBJECT
 public:
     explicit Editor(QWidget *parent = 0);
-    void setBuffer(QVector<float> buf);
+    void setBuffer(const std::vector<float>& buf);
 
 signals:
 
@@ -32,7 +34,10 @@ protected:
 private:
     float clipStart;
     float clipLength;
-    QVector<float> buffer;
+
+    typedef SegTree<MinMax<float>> MinMaxTree;
+
+    MinMaxTree buffer;
 
     const QBrush brush = QBrush(QColor(0,0,0));
     const QPen pen = QPen();

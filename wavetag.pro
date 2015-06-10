@@ -16,9 +16,11 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    editor.cpp
+    editor.cpp \
+    segtree.cpp
 
 HEADERS  += mainwindow.h \
-    editor.h
+    editor.h \
+    segtree.h
 
 FORMS    += mainwindow.ui
