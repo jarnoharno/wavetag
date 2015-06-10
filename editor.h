@@ -2,6 +2,7 @@
 #define EDITOR_H
 
 #include "segtree.h"
+#include "intervaltree.h"
 #include <QWidget>
 #include <QVector>
 #include <QBrush>
@@ -30,6 +31,8 @@ protected:
     void mouseReleaseEvent(QMouseEvent* event);
     void mouseMoveEvent(QMouseEvent* event);
     void wheelEvent(QWheelEvent* event);
+    void keyPressEvent(QKeyEvent* event);
+    void keyReleaseEvent(QKeyEvent* event);
 
 private:
     float clipStart;
@@ -63,6 +66,13 @@ private:
     };
     const QBitmap dot = QBitmap::fromData(QSize(5,5),dotData);
 
+    float tagBound1;
+    float tagBound2;
+    bool tagging = false;
+    typedef IntervalTree<float> TagTree;
+    TagTree tags;
+
+    void stopTagging();
 };
 
 #endif // EDITOR_H

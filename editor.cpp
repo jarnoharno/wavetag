@@ -14,6 +14,7 @@ Editor::Editor(QWidget *parent) : QWidget(parent)
 void Editor::setBuffer(const std::vector<float>& buf)
 {
     buffer = MinMaxTree(buf.cbegin(), buf.cend());
+    tags = TagTree();
     clipStart = 0.f;
     clipLength = buffer.length()/44100.f;
     update();
@@ -56,21 +57,13 @@ void Editor::paintEvent(QPaintEvent *event)
     for (int64_t x = 0; x < w; ++x) {
         float t1 = clipLength*x/w + clipStart;
         float t2 = clipLength*(x+1)/w + clipStart;
-        int i1 = n*t1/t;
-        int i2 = n*t2/t;
+        int i1 = t1*44100;
+        int i2 = t2*44100;
         if (i1 == i2) continue;
 
-        const MinMax<float>& mm = buffer.range(i1,i2);
+        auto mm = buffer.range(i1,i2);
         float y1 = mm.mn;
         float y2 = mm.mx;
-        /*
-        float y1 = buffer[i1];
-        float y2 = buffer[i1];
-        for (int j = i1+1; j < i2; ++j) {
-            y1 = std::min(y1,buffer[j]);
-            y2 = std::max(y2,buffer[j]);
-        }
-        */
 
         p.setPen(Qt::black);
         // draw connecting line
@@ -90,31 +83,73 @@ void Editor::paintEvent(QPaintEvent *event)
         }
 
     }
+    p.setCompositionMode(QPainter::CompositionMode_Difference);
+    int64_t h = p.device()->height();
+    // draw tagging interval
+    if (tagging) {
+        int x1 = w*(tagBound1-clipStart)/clipLength;
+        int x2 = w*(tagBound2-clipStart)/clipLength;
+        if (x1 > x2) std::swap(x1,x2);
+        p.fillRect(x1,0,std::max(x2-x1,1),h,QBrush(Qt::gray));
+    }
+    // draw all tags
+
+
     p.end();
+}
+
+void Editor::keyPressEvent(QKeyEvent* event)
+{
 }
 
 void Editor::mousePressEvent(QMouseEvent* event)
 {
     oldX = event->x();
+    // tagging is only initiated here
+    if (event->modifiers() & Qt::ControlModifier) {
+        qDebug() << "start tagging";
+        int w = width();
+        tagging = true;
+        tagBound1 = clipStart + clipLength*oldX/w;
+    }
+}
+
+void Editor::stopTagging()
+{
+    tagging = false;
+    qDebug() << "tag this:" << tagBound1 << "," << tagBound2;
+    update();
+}
+
+void Editor::keyReleaseEvent(QKeyEvent* event)
+{
+    if (event->key() == Qt::Key_Control && tagging) {
+        stopTagging();
+    }
 }
 
 void Editor::mouseReleaseEvent(QMouseEvent* event)
 {
+    if (tagging) {
+        stopTagging();
+    }
 }
 
 void Editor::mouseMoveEvent(QMouseEvent* event)
 {
     int x = event->x();
     int w = width();
-    clipStart -= (x - oldX)*clipLength/w;
+    if (tagging) {
+        tagBound2 = clipStart + clipLength*x/w;
+    } else {
+        clipStart -= (x - oldX)*clipLength/w;
+        // check bounds
+        clipStart = std::max(0.f,clipStart);
+        int n = buffer.length();
+        float t = n/44100.f;
+        clipStart = std::min(t-clipLength,clipStart);
+    }
     oldX = x;
-
-    // check bounds
-    clipStart = std::max(0.f,clipStart);
-    int n = buffer.length();
-    float t = n/44100.f;
-    clipStart = std::min(t-clipLength,clipStart);
-
     update();
 }
 

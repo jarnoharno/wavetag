@@ -81,6 +81,7 @@ void MainWindow::decodeError(QAudioDecoder::Error error)
 
 void MainWindow::decodeFinished()
 {
+    qDebug() << "decoding done";
     ui->editor->setBuffer(tmpBuffer);
     // force deallocation
     std::vector<float>().swap(tmpBuffer);
