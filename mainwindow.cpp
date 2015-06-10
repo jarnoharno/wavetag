@@ -16,9 +16,9 @@ MainWindow::MainWindow(QWidget *parent) :
     QAudioFormat desiredFormat;
     desiredFormat.setChannelCount(1);
     desiredFormat.setCodec("audio/x-raw");
-    desiredFormat.setSampleType(QAudioFormat::SignedInt);
+    desiredFormat.setSampleType(QAudioFormat::Float);
     desiredFormat.setSampleRate(44100);
-    desiredFormat.setSampleSize(16);
+    desiredFormat.setSampleSize(32);
     decoder->setAudioFormat(desiredFormat);
 
     connect(decoder, SIGNAL(bufferReady()),
@@ -31,6 +31,12 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     connect(ui->actionOpen, SIGNAL(triggered()),
             this, SLOT(openFileDialog()));
+    connect(ui->lines, SIGNAL(toggled(bool)),
+            ui->editor, SLOT(setLines(bool)));
+    connect(ui->extrema, SIGNAL(toggled(bool)),
+            ui->editor, SLOT(setExtrema(bool)));
+    connect(ui->dots, SIGNAL(toggled(bool)),
+            ui->editor, SLOT(setDots(bool)));
 }
 
 MainWindow::~MainWindow()
@@ -61,10 +67,9 @@ void MainWindow::openFileDialog()
 void MainWindow::readBuffer()
 {
     QAudioBuffer buffer = decoder->read();
-    const int16_t *data = buffer.constData<int16_t>();
+    const float *data = buffer.constData<float>();
     for (int i = 0; i < buffer.frameCount(); ++i) {
-        float x = data[i]*scale;
-        tmpBuffer.push_back(x);
+        tmpBuffer.push_back(data[i]);
     }
  }
 
