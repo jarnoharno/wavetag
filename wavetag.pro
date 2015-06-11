@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-CONFIG += c++11
+CONFIG += c++14
 
 QT       += core gui multimedia
 
@@ -17,8 +17,7 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     editor.cpp \
-    segtree.cpp \
-    intervaltree.cpp
+    segtree.cpp
 
 HEADERS  += mainwindow.h \
     editor.h \

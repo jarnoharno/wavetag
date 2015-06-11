@@ -15,6 +15,8 @@ void Editor::setBuffer(const std::vector<float>& buf)
 {
     buffer = MinMaxTree(buf.cbegin(), buf.cend());
     tags = TagTree();
+    tags.add(1.0,2.0);
+    tags.add(3.0,4.0);
     clipStart = 0.f;
     clipLength = buffer.length()/44100.f;
     update();
@@ -85,16 +87,25 @@ void Editor::paintEvent(QPaintEvent *event)
     }
     p.setCompositionMode(QPainter::CompositionMode_Difference);
     int64_t h = p.device()->height();
+
+    // draw all tags
+    for (auto i : tags.overlapping(clipStart,clipStart+clipLength)) {
+        int x1 = w*(i.left-clipStart)/clipLength;
+        int x2 = w*(i.right-clipStart)/clipLength;
+        p.fillRect(x1,0,std::max(x2-x1,1),h,QBrush(Qt::gray));
+    }
     // draw tagging interval
     if (tagging) {
         int x1 = w*(tagBound1-clipStart)/clipLength;
         int x2 = w*(tagBound2-clipStart)/clipLength;
         if (x1 > x2) std::swap(x1,x2);
-        p.fillRect(x1,0,std::max(x2-x1,1),h,QBrush(Qt::gray));
+        p.fillRect(x1,0,std::max(x2-x1,1),h,QBrush(Qt::darkGreen));
+    } else if (erasing) {
+        int x1 = w*(tagBound1-clipStart)/clipLength;
+        int x2 = w*(tagBound2-clipStart)/clipLength;
+        if (x1 > x2) std::swap(x1,x2);
+        p.fillRect(x1,0,std::max(x2-x1,1),h,QBrush(Qt::darkRed));
     }
-    // draw all tags
-
-
     p.end();
 }
 
@@ -105,11 +116,13 @@ void Editor::keyPressEvent(QKeyEvent* event)
 void Editor::mousePressEvent(QMouseEvent* event)
 {
     oldX = event->x();
+    int w = width();
     // tagging is only initiated here
     if (event->modifiers() & Qt::ControlModifier) {
-        qDebug() << "start tagging";
-        int w = width();
         tagging = true;
+        tagBound1 = clipStart + clipLength*oldX/w;
+    } else if (event->modifiers() & Qt::AltModifier) {
+        erasing = true;
         tagBound1 = clipStart + clipLength*oldX/w;
     }
 }
@@ -117,14 +130,24 @@ void Editor::mousePressEvent(QMouseEvent* event)
 void Editor::stopTagging()
 {
     tagging = false;
-    qDebug() << "tag this:" << tagBound1 << "," << tagBound2;
+    tags.add(tagBound1, tagBound2);
     update();
 }
+
+void Editor::stopErasing()
+{
+    erasing = false;
+    tags.subtract(tagBound1, tagBound2);
+    update();
+}
+
 
 void Editor::keyReleaseEvent(QKeyEvent* event)
 {
     if (event->key() == Qt::Key_Control && tagging) {
         stopTagging();
+    } else if (event->key() == Qt::Key_Alt && erasing) {
+        stopErasing();
     }
 }
 
@@ -132,6 +155,8 @@ void Editor::mouseReleaseEvent(QMouseEvent* event)
 {
     if (tagging) {
         stopTagging();
+    } else if (erasing) {
+        stopErasing();
     }
 }
 
@@ -140,6 +165,8 @@ void Editor::mouseMoveEvent(QMouseEvent* event)
     int x = event->x();
     int w = width();
     if (tagging) {
+        tagBound2 = clipStart + clipLength*x/w;
+    } else if (erasing) {
         tagBound2 = clipStart + clipLength*x/w;
     } else {
         clipStart -= (x - oldX)*clipLength/w;

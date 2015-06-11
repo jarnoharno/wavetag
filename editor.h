@@ -69,10 +69,12 @@ private:
     float tagBound1;
     float tagBound2;
     bool tagging = false;
+    bool erasing = false;
     typedef IntervalTree<float> TagTree;
     TagTree tags;
 
     void stopTagging();
+    void stopErasing();
 };
 
 #endif // EDITOR_H
