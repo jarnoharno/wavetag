@@ -11,6 +11,7 @@
 #include <QBitmap>
 #include <QFile>
 #include <QAudioOutput>
+#include <QTimer>
 #include <vector>
 
 class Editor;
@@ -18,16 +19,18 @@ class Editor;
 class AudioDevice : public QIODevice
 {
     Q_OBJECT
+
 public:
     AudioDevice(Editor* editor);
     void setBuffer(float* buf, qint64 len);
-private:
+    bool atEnd() const;
     qint64 cursor = 0;
+
+private:
     qint64 len = 0;
     char* start = 0;
     Editor* editor;
-signals:
-    void eof();
+
 protected:
     qint64 readData(char *data, qint64 maxlen);
     qint64 writeData(const char *data, qint64 len);
@@ -42,6 +45,8 @@ public:
     void saveLabels(QString fn);
     void openLabels(QString fn);
 
+    bool playing = false;
+
 signals:
 
 public slots:
@@ -49,11 +54,10 @@ public slots:
     void setDots(bool b);
     void setExtrema(bool b);
     void start();
-    void stop();
 
 private slots:
     void handleStateChanged(QAudio::State state);
-    void handleAudioNotification();
+    void handleTimer();
 
 protected:
     void paintEvent(QPaintEvent* event);
@@ -65,6 +69,8 @@ protected:
     void keyReleaseEvent(QKeyEvent* event);
 
 private:
+    QTimer* timer;
+
     float clipStart;
     float clipLength;
 
@@ -113,7 +119,6 @@ private:
     float visCursor = 0.f;
     float prevStart = 0.f;
 
-    bool playing = false;
     int cursor = 0;
     void pushBytes();
 
