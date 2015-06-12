@@ -9,23 +9,51 @@
 #include <QPen>
 #include <QPainter>
 #include <QBitmap>
-#include <vector>
 #include <QFile>
+#include <QAudioOutput>
+#include <vector>
+
+class Editor;
+
+class AudioDevice : public QIODevice
+{
+    Q_OBJECT
+public:
+    AudioDevice(Editor* editor);
+    void setBuffer(float* buf, qint64 len);
+private:
+    qint64 cursor = 0;
+    qint64 len = 0;
+    char* start = 0;
+    Editor* editor;
+signals:
+    void eof();
+protected:
+    qint64 readData(char *data, qint64 maxlen);
+    qint64 writeData(const char *data, qint64 len);
+};
 
 class Editor : public QWidget
 {
     Q_OBJECT
 public:
     explicit Editor(QWidget *parent = 0);
-    void setBuffer(const std::vector<float>& buf);
+    void setBuffer(std::vector<float>&& buf);
     void saveLabels(QString fn);
     void openLabels(QString fn);
+
 signals:
 
 public slots:
     void setLines(bool b);
     void setDots(bool b);
     void setExtrema(bool b);
+    void start();
+    void stop();
+
+private slots:
+    void handleStateChanged(QAudio::State state);
+    void handleAudioNotification();
 
 protected:
     void paintEvent(QPaintEvent* event);
@@ -43,6 +71,7 @@ private:
     typedef SegTree<MinMax<float>> MinMaxTree;
 
     MinMaxTree buffer;
+    std::vector<float> audioBuffer;
 
     const QBrush brush = QBrush(QColor(0,0,0));
     const QPen pen = QPen();
@@ -80,6 +109,17 @@ private:
     void stopErasing();
 
     bool parseLabels(QFile* file);
+
+    float visCursor = 0.f;
+    float prevStart = 0.f;
+
+    bool playing = false;
+    int cursor = 0;
+    void pushBytes();
+
+    QIODevice* pushAudio;
+    QAudioOutput* audio;
+    AudioDevice* audioDevice;
 };
 
 #endif // EDITOR_H

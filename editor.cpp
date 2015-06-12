@@ -10,8 +10,63 @@
 
 constexpr uchar Editor::dotData[];
 
+AudioDevice::AudioDevice(Editor* editor):
+    QIODevice(editor), editor(editor)
+{}
+
+qint64 AudioDevice::readData(char *data, qint64 maxlen)
+{
+    qDebug() << "requested bytes:" << maxlen;
+    if (len == cursor) {
+        emit eof();
+        return 0;
+    }
+    qint64 rlen = std::min(maxlen,len-cursor);
+    memcpy(data, start+cursor, rlen);
+    cursor += rlen;
+    return rlen;
+}
+
+void AudioDevice::setBuffer(float* buf, qint64 len)
+{
+    this->start = reinterpret_cast<char*>(buf);
+    this->len = len*4;
+    this->cursor = 0;
+}
+
+qint64 AudioDevice::writeData(const char *data, qint64 len)
+{
+    qDebug() << "write";
+    return -1;
+}
+
 Editor::Editor(QWidget *parent) : QWidget(parent)
 {
+    QAudioFormat format;
+    format.setSampleRate(44100);
+    format.setChannelCount(1);
+    format.setSampleSize(32);
+    format.setCodec("audio/pcm");
+    format.setSampleType(QAudioFormat::Float);
+
+    QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
+    if (!info.isFormatSupported(format)) {
+        qWarning() << "Raw audio format not supported by backend, cannot play audio.";
+        return;
+    }
+
+    audio = new QAudioOutput(format, this);
+    connect(audio, SIGNAL(stateChanged(QAudio::State)),
+            this, SLOT(handleStateChanged(QAudio::State)),
+            Qt::QueuedConnection);
+    connect(audio, SIGNAL(notify()),
+            this, SLOT(handleAudioNotification()));
+    audio->setNotifyInterval(25);
+
+    audioDevice = new AudioDevice(this);
+    audioDevice->open(QIODevice::ReadOnly);
+    connect(audioDevice, SIGNAL(eof()), this, SLOT(stop()),
+            Qt::QueuedConnection);
 }
 
 void Editor::saveLabels(QString fn)
@@ -63,10 +118,83 @@ bool Editor::parseLabels(QFile *file)
     return true;
 }
 
-void Editor::setBuffer(const std::vector<float>& buf)
+void Editor::start()
+{
+    cursor = visCursor*44100.f;
+    pushAudio = audio->start();
+}
+
+void Editor::stop()
+{
+    audio->stop();
+}
+
+
+void Editor::pushBytes()
+{
+    int bufsize = audioBuffer.size();
+    int devbufsize = audio->bytesFree() / 4;
+    int maxlen = std::min(devbufsize,bufsize-cursor);
+    const char *start = reinterpret_cast<char*>(&audioBuffer[cursor]);
+    qint64 len = pushAudio->write(start,maxlen*4);
+    Q_ASSERT(len % 4 == 0);
+    cursor += len/4;
+    if (bufsize == cursor) audio->stop();
+}
+
+void Editor::keyPressEvent(QKeyEvent* event)
+{
+    if (event->key() == Qt::Key_Z) {
+        switch (audio->state()) {
+        case QAudio::ActiveState:
+        case QAudio::IdleState:
+            stop();
+            break;
+        case QAudio::SuspendedState:
+            break;
+        case QAudio::StoppedState:
+            start();
+            break;
+        }
+    }
+}
+
+void Editor::handleAudioNotification()
+{
+    if (audio->state() == QAudio::ActiveState ||
+        audio->state() == QAudio::IdleState) {
+        pushBytes();
+        visCursor += audio->notifyInterval()/1e3;
+        update();
+    }
+}
+
+void Editor::handleStateChanged(QAudio::State state)
+{
+    qDebug() << state;
+    qDebug() << audio->error();
+    switch (state) {
+    case QAudio::ActiveState:
+    case QAudio::IdleState:
+        pushBytes();
+        break;
+    case QAudio::SuspendedState:
+        break;
+    case QAudio::StoppedState:
+        visCursor = prevStart + audio->processedUSecs() / 1e6;
+        prevStart = visCursor;
+        update();
+        break;
+    }
+}
+
+void Editor::setBuffer(std::vector<float>&& buf)
 {
     buffer = MinMaxTree(buf.cbegin(), buf.cend());
+    audioBuffer = buf;
     tags = TagTree();
+    cursor = 0;
+    audioDevice->setBuffer(&audioBuffer[0],audioBuffer.size());
     clipStart = 0.f;
     clipLength = buffer.length()/44100.f;
     update();
@@ -156,11 +284,15 @@ void Editor::paintEvent(QPaintEvent *event)
         if (x1 > x2) std::swap(x1,x2);
         p.fillRect(x1,0,std::max(x2-x1,1),h,QBrush(Qt::darkRed));
     }
-    p.end();
-}
 
-void Editor::keyPressEvent(QKeyEvent* event)
-{
+    // draw cursor
+    int c = w*(visCursor-clipStart)/clipLength;
+    if (c >= 0 && c < w) {
+        p.setPen(Qt::red);
+        p.drawLine(c,0,c,h);
+    }
+
+    p.end();
 }
 
 void Editor::mousePressEvent(QMouseEvent* event)
