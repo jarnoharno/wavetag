@@ -5,6 +5,7 @@
 #include <QMouseEvent>
 #include <QFile>
 #include <QTextStream>
+#include <QMessageBox>
 #include <cmath>
 
 constexpr uchar Editor::dotData[];
@@ -13,10 +14,12 @@ Editor::Editor(QWidget *parent) : QWidget(parent)
 {
 }
 
-void Editor::saveLabels(QString fn) const
+void Editor::saveLabels(QString fn)
 {
     QFile file(fn);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QMessageBox::critical(this, tr("Wavetag"),
+                              tr("Unable to open") + '\"' + fn + '\"');
         return;
     }
     QTextStream out(&file);
@@ -24,6 +27,40 @@ void Editor::saveLabels(QString fn) const
     for (auto r: tags) {
         out << r.left << '\t' << r.right << '\t' << ++i << '\n';
     }
+}
+
+void Editor::openLabels(QString fn)
+{
+    QFile file(fn);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QMessageBox::critical(this, tr("Wavetag"),
+                              tr("Unable to open") + '\"' + fn + '\"');
+        return;
+    }
+    if (!parseLabels(&file)) {
+        QMessageBox::critical(this, tr("Wavetag"),
+                              tr("Unable to parse") + '\"' + fn + '\"');
+    }
+}
+
+bool Editor::parseLabels(QFile *file)
+{
+    QTextStream in(file);
+    TagTree tmp;
+    while (!in.atEnd()) {
+        QString line = in.readLine();
+        auto words = line.split(QRegExp("\\s+"));
+        if (words.length() == 0) continue;
+        if (words.length() < 2) return false;
+        bool ok = true;
+        float a = words[0].toFloat(&ok);
+        if (!ok) return false;
+        float b = words[1].toFloat(&ok);
+        if (!ok) return false;
+        tmp.add(a, b);
+    }
+    tags = tmp;
+    return true;
 }
 
 void Editor::setBuffer(const std::vector<float>& buf)

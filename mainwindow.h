@@ -23,6 +23,7 @@ public:
 private slots:
     void openFileDialog();
     void openSaveDialog();
+    void openLabelsDialog();
     void readBuffer();
     void decodeError(QAudioDecoder::Error error);
     void decodeFinished();

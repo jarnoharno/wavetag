@@ -31,6 +31,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     connect(ui->actionOpen, SIGNAL(triggered()),
             this, SLOT(openFileDialog()));
+    connect(ui->actionOpenLabels, SIGNAL(triggered()),
+            this, SLOT(openLabelsDialog()));
     connect(ui->actionSaveLabels, SIGNAL(triggered()),
             this, SLOT(openSaveDialog()));
     connect(ui->lines, SIGNAL(toggled(bool)),
@@ -59,16 +61,29 @@ void MainWindow::openFileDialog()
     QString fileName = QFileDialog::getOpenFileName(this,
                                                     tr("Open Audio File"),
                                                     QDir::currentPath(),
-                                                    tr("Audio Files (*)"));
+                                                    tr("Audio Files (*.flac);;"
+                                                       "All Files (*)"));
     if (fileName.isEmpty()) return;
     open(fileName);
+}
+
+void MainWindow::openLabelsDialog()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,
+                                                    tr("Open Labels File"),
+                                                    QDir::currentPath(),
+                                                    tr("Label Files (*.txt);;"
+                                                       "All Files (*)"));
+    if (fileName.isEmpty()) return;
+    ui->editor->openLabels(fileName);
 }
 
 void MainWindow::openSaveDialog()
 {
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save Labels"),
                                                     QDir::currentPath(),
-                                                    tr("Label files (*.txt)"));
+                                                    tr("Label Files (*.txt);;"
+                                                       "All Files (*)"));
     if (fileName.isEmpty()) return;
     ui->editor->saveLabels(fileName);
 }

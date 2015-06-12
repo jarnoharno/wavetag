@@ -10,6 +10,7 @@
 #include <QPainter>
 #include <QBitmap>
 #include <vector>
+#include <QFile>
 
 class Editor : public QWidget
 {
@@ -17,7 +18,8 @@ class Editor : public QWidget
 public:
     explicit Editor(QWidget *parent = 0);
     void setBuffer(const std::vector<float>& buf);
-    void saveLabels(QString fn) const;
+    void saveLabels(QString fn);
+    void openLabels(QString fn);
 signals:
 
 public slots:
@@ -76,6 +78,8 @@ private:
 
     void stopTagging();
     void stopErasing();
+
+    bool parseLabels(QFile* file);
 };
 
 #endif // EDITOR_H
