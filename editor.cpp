@@ -1,4 +1,5 @@
 #include "editor.h"
+#include "util.h"
 #include <QDebug>
 #include <QPainter>
 #include <QMouseEvent>
@@ -125,9 +126,24 @@ void Editor::mousePressEvent(QMouseEvent* event)
     }
 }
 
+void Editor::swapClipTags()
+{
+    if (tagBound1 > tagBound2) {
+        std::swap(tagBound1,tagBound2);
+    }
+    if (tagBound1 < clipStart) {
+        tagBound1 = clipStart;
+    }
+    float clipEnd = clipStart + clipLength;
+    if (tagBound2 > clipEnd) {
+        tagBound2 = clipEnd;
+    }
+}
+
 void Editor::stopTagging()
 {
     tagging = false;
+    swapClipTags();
     tags.add(tagBound1, tagBound2);
     update();
 }
@@ -135,6 +151,7 @@ void Editor::stopTagging()
 void Editor::stopErasing()
 {
     erasing = false;
+    swapClipTags();
     tags.subtract(tagBound1, tagBound2);
     update();
 }

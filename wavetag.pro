@@ -22,6 +22,7 @@ SOURCES += main.cpp\
 HEADERS  += mainwindow.h \
     editor.h \
     segtree.h \
-    intervaltree.h
+    intervaltree.h \
+    util.h
 
 FORMS    += mainwindow.ui

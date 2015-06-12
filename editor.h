@@ -66,6 +66,7 @@ private:
     };
     const QBitmap dot = QBitmap::fromData(QSize(5,5),dotData);
 
+    void swapClipTags();
     float tagBound1;
     float tagBound2;
     bool tagging = false;
