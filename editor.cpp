@@ -3,13 +3,27 @@
 #include <QDebug>
 #include <QPainter>
 #include <QMouseEvent>
-//#include <algorithm>
+#include <QFile>
+#include <QTextStream>
 #include <cmath>
 
 constexpr uchar Editor::dotData[];
 
 Editor::Editor(QWidget *parent) : QWidget(parent)
 {
+}
+
+void Editor::saveLabels(QString fn) const
+{
+    QFile file(fn);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        return;
+    }
+    QTextStream out(&file);
+    int i = 0;
+    for (auto r: tags) {
+        out << r.left << '\t' << r.right << '\t' << ++i << '\n';
+    }
 }
 
 void Editor::setBuffer(const std::vector<float>& buf)

@@ -17,7 +17,7 @@ class Editor : public QWidget
 public:
     explicit Editor(QWidget *parent = 0);
     void setBuffer(const std::vector<float>& buf);
-
+    void saveLabels(QString fn) const;
 signals:
 
 public slots:
