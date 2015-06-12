@@ -11,6 +11,8 @@ public:
 
 private Q_SLOTS:
     void testIntervalTree();
+    void testSubtract();
+    void testAdd();
 };
 
 TestwavetagTest::TestwavetagTest()
@@ -231,6 +233,39 @@ void TestwavetagTest::testIntervalTree()
     ++i;
     QVERIFY(i->left == 2);
     QVERIFY(i->right == 2.5);
+    QVERIFY(i != j);
+    ++i;
+    QVERIFY(i == j);
+}
+
+void TestwavetagTest::testSubtract()
+{
+    IntervalTree<float> tree;
+    tree.add(0,1);
+    tree.add(2,3);
+    tree.subtract(-1,1.5);
+    auto i = tree.begin();
+    auto j = tree.end();
+    QVERIFY(i->left == 2);
+    QVERIFY(i->right == 3);
+    QVERIFY(i != j);
+    ++i;
+    QVERIFY(i == j);
+}
+
+void TestwavetagTest::testAdd()
+{
+    IntervalTree<float> tree;
+    tree.add(2,3);
+    tree.add(0,1);
+    auto i = tree.begin();
+    auto j = tree.end();
+    QVERIFY(i->left == 0);
+    QVERIFY(i->right == 1);
+    QVERIFY(i != j);
+    ++i;
+    QVERIFY(i->left == 2);
+    QVERIFY(i->right == 3);
     QVERIFY(i != j);
     ++i;
     QVERIFY(i == j);

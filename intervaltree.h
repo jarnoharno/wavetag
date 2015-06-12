@@ -133,7 +133,7 @@ public:
         if (u == s.end() || !u->right) {
             u = s.emplace(std::move(r)).first;
         }
-        if ((--u)->right) {
+        if (u == s.begin() || (--u)->right) {
             s.emplace(std::move(l));
         }
     }
@@ -150,8 +150,7 @@ public:
             r.right = false;
             u = s.emplace(std::move(r)).first;
         }
-        --u;
-        if (u != s.end() && !u->right) {
+        if (u != s.begin() && !(--u)->right) {
             l.right = true;
             s.emplace(std::move(l));
         }
@@ -186,7 +185,7 @@ public:
     }
     IntervalIterator<T> end() const
     {
-        return IntervalIterator<T>(--s.end());
+        return IntervalIterator<T>(s.end());
     }
 
 private:

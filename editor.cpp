@@ -15,8 +15,6 @@ void Editor::setBuffer(const std::vector<float>& buf)
 {
     buffer = MinMaxTree(buf.cbegin(), buf.cend());
     tags = TagTree();
-    tags.add(1.0,2.0);
-    tags.add(3.0,4.0);
     clipStart = 0.f;
     clipLength = buffer.length()/44100.f;
     update();
