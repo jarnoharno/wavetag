@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Wavetag</string>
   </property>
   <widget class="Editor" name="editor">
    <property name="palette">
@@ -171,17 +171,17 @@
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionOpen">
    <property name="text">
-    <string>Open Audio File</string>
+    <string>Open Audio...</string>
    </property>
   </action>
   <action name="actionSaveLabels">
    <property name="text">
-    <string>Export Labels As...</string>
+    <string>Export Labels...</string>
    </property>
   </action>
   <action name="actionOpenLabels">
    <property name="text">
-    <string>Import Labels</string>
+    <string>Import Labels...</string>
    </property>
   </action>
  </widget>
