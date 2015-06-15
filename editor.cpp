@@ -47,7 +47,7 @@ qint64 AudioDevice::readData(char *data, qint64 maxlen)
 
 void AudioDevice::setCursor(qint64 c)
 {
-    cursor = c*4;
+    cursor = clamp<qint64>(c*4,0,len);
 }
 
 bool AudioDevice::atEnd() const
