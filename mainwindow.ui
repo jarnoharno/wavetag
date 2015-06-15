@@ -83,7 +83,7 @@
    </property>
    <layout class="QVBoxLayout" name="verticalLayout" stretch="0">
     <item>
-     <layout class="QVBoxLayout" name="vertical" stretch="0,0">
+     <layout class="QVBoxLayout" name="vertical" stretch="0,0,0">
       <item>
        <layout class="QHBoxLayout" name="horizontal">
         <item>
@@ -143,6 +143,33 @@
          </size>
         </property>
        </spacer>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontal_2">
+        <item>
+         <spacer name="horizontalSpacer_2">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="silenceRegions">
+          <property name="text">
+           <string>Silence Regions</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
     </item>

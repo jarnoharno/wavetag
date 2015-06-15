@@ -49,6 +49,7 @@ public:
     void openLabels(QString fn);
 
     bool playing = false;
+    bool silenceRegions = true;
     TagTree tags;
 
 signals:
@@ -57,6 +58,7 @@ public slots:
     void setLines(bool b);
     void setDots(bool b);
     void setExtrema(bool b);
+    void setSilenceRegions(bool b);
     void start();
 
 private slots:

@@ -41,6 +41,8 @@ MainWindow::MainWindow(QWidget *parent) :
             ui->editor, SLOT(setExtrema(bool)));
     connect(ui->dots, SIGNAL(toggled(bool)),
             ui->editor, SLOT(setDots(bool)));
+    connect(ui->silenceRegions, SIGNAL(toggled(bool)),
+            ui->editor, SLOT(setSilenceRegions(bool)));
 }
 
 MainWindow::~MainWindow()
