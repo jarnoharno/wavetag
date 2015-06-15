@@ -20,6 +20,15 @@ qint64 AudioDevice::readData(char *data, qint64 maxlen)
     if (!editor->playing) return 0;
     qint64 rlen = std::min(maxlen,len-cursor);
     memcpy(data, start+cursor, rlen);
+    // zero out tagged regions
+    float t1 = (cursor/4)/44100.f;
+    float t2 = ((cursor+rlen)/4)/44100.f;
+    for (auto r: editor->tags.overlapping(t1,t2)) {
+        int i1 = std::max(cursor,static_cast<qint64>(r.left*44100l)*4l);
+        int i2 = std::min(cursor+rlen,static_cast<qint64>(r.right*44100l)*4l);
+        qDebug() << i1 << i2;
+        memset(data+i1-cursor,0,i2-i1);
+    }
     cursor += rlen;
     return rlen;
 }

@@ -39,13 +39,17 @@ protected:
 class Editor : public QWidget
 {
     Q_OBJECT
+
 public:
+    typedef IntervalTree<float> TagTree;
+
     explicit Editor(QWidget *parent = 0);
     void setBuffer(std::vector<float>&& buf);
     void saveLabels(QString fn);
     void openLabels(QString fn);
 
     bool playing = false;
+    TagTree tags;
 
 signals:
 
@@ -108,8 +112,6 @@ private:
     float tagBound2;
     bool tagging = false;
     bool erasing = false;
-    typedef IntervalTree<float> TagTree;
-    TagTree tags;
 
     void stopTagging();
     void stopErasing();
