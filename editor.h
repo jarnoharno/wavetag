@@ -23,6 +23,7 @@ class AudioDevice : public QIODevice
 public:
     AudioDevice(Editor* editor);
     void setBuffer(float* buf, qint64 len);
+    void setCursor(qint64 c);
     bool atEnd() const;
     qint64 cursor = 0;
 
@@ -114,7 +115,10 @@ private:
     float tagBound2;
     bool tagging = false;
     bool erasing = false;
+    bool rewind = false;
+    float rewindCursor = 0.f;
 
+    void stopRewind(QMouseEvent* event);
     void stopTagging();
     void stopErasing();
 

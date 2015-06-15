@@ -45,6 +45,11 @@ qint64 AudioDevice::readData(char *data, qint64 maxlen)
     return rlen;
 }
 
+void AudioDevice::setCursor(qint64 c)
+{
+    cursor = c*4;
+}
+
 bool AudioDevice::atEnd() const
 {
     return cursor == len;
@@ -300,6 +305,15 @@ void Editor::paintEvent(QPaintEvent *event)
         p.fillRect(x1,0,std::max(x2-x1,1),h,QBrush(Qt::darkRed));
     }
 
+    // draw rewind cursor
+    if (rewind) {
+        int c = w*(rewindCursor-clipStart)/clipLength;
+        if (c >= 0 && c < w) {
+            p.setPen(Qt::magenta);
+            p.drawLine(c,0,c,h);
+        }
+    }
+
     // draw cursor
     int c = w*(visCursor-clipStart)/clipLength;
     if (c >= 0 && c < w) {
@@ -315,7 +329,9 @@ void Editor::mousePressEvent(QMouseEvent* event)
     oldX = event->x();
     int w = width();
     // tagging is only initiated here
-    if (event->modifiers() & Qt::ControlModifier) {
+    if (event->button() == Qt::RightButton) {
+        rewind = true;
+    } else if (event->modifiers() & Qt::ControlModifier) {
         tagging = true;
         tagBound1 = clipStart + clipLength*oldX/w;
     } else if (event->modifiers() & Qt::AltModifier) {
@@ -336,6 +352,18 @@ void Editor::swapClipTags()
     if (tagBound2 > clipEnd) {
         tagBound2 = clipEnd;
     }
+}
+
+void Editor::stopRewind(QMouseEvent* event)
+{
+    rewind = false;
+    int x = event->x();
+    int w = width();
+    float c = clipStart + clipLength*x/w;
+    audioDevice->setCursor(c*44100);
+    visCursor = (audioDevice->cursor/4)/44100.f;
+    prevStart = visCursor - audio->elapsedUSecs()/1e6f;
+    update();
 }
 
 void Editor::stopTagging()
@@ -366,7 +394,9 @@ void Editor::keyReleaseEvent(QKeyEvent* event)
 
 void Editor::mouseReleaseEvent(QMouseEvent* event)
 {
-    if (tagging) {
+    if (rewind) {
+        stopRewind(event);
+    } else if (tagging) {
         stopTagging();
     } else if (erasing) {
         stopErasing();
@@ -381,6 +411,8 @@ void Editor::mouseMoveEvent(QMouseEvent* event)
         tagBound2 = clipStart + clipLength*x/w;
     } else if (erasing) {
         tagBound2 = clipStart + clipLength*x/w;
+    } else if (rewind) {
+        rewindCursor = clipStart + clipLength*x/w;
     } else {
         clipStart -= (x - oldX)*clipLength/w;
         // check bounds
