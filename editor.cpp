@@ -305,14 +305,25 @@ void Editor::paintEvent(QPaintEvent *event)
         p.drawLine(c,0,c,h);
     }
 
-    // draw window boundary time labels
+    // draw time labels
     p.setPen(Qt::white);
     QFont font("Liberation Sans");
     p.setFont(font);
 
     p.drawText(10,20, "start:  " + QString::number(clipStart)  + " s");
     p.drawText(10,40, "length: " + QString::number(clipLength) + " s");
-
+    if (rewind) {
+        p.drawText(10,60, "cursor: " + QString::number(rewindCursor) + " s");
+    } else {
+        p.drawText(10,60, "cursor: " + QString::number(visCursor) + " s");
+    }
+    if (tagging || erasing) {
+        float l = tagBound1;
+        float r = tagBound2;
+        if (l > r) std::swap(l,r);
+        p.drawText(10,80, "start:  " + QString::number(l) + " s");
+        p.drawText(10,100, "length: " + QString::number(r-l) + " s");
+    }
 
     p.end();
 }
