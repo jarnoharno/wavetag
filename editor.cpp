@@ -220,30 +220,13 @@ void Editor::setBuffer(std::vector<float>&& buf)
     update();
 }
 
-void Editor::setLines(bool b)
-{
-    drawLines = b;
-    update();
-}
-
-void Editor::setDots(bool b)
-{
-    drawDots = b;
-    update();
-}
-
-void Editor::setExtrema(bool b)
-{
-    drawExtrema = b;
-    update();
-}
-
 void Editor::paintEvent(QPaintEvent *event)
 {
     if (buffer.empty()) return;
     QPainter p;
     p.begin(this);
-    p.setPen(pen);
+    p.setPen(Qt::black);
+
     int64_t n = buffer.length();
     float t = n/44100.f;
     int64_t w = p.device()->width();
@@ -253,6 +236,7 @@ void Editor::paintEvent(QPaintEvent *event)
     int z3 = (1.0f-buffer[0].mn)*h2;
 
     int space = w/(clipLength*44100.f);
+
 
     for (int64_t x = 0; x < w; ++x) {
         float t1 = clipLength*x/w + clipStart;
@@ -265,21 +249,20 @@ void Editor::paintEvent(QPaintEvent *event)
         float y1 = mm.mn;
         float y2 = mm.mx;
 
-        p.setPen(Qt::black);
         // draw connecting line
         int z0 = (1.f-buffer[i1].mn)*h2;
-        if (drawLines) accurateDrawLine(p,x3,z3,x,z0);
+        accurateDrawLine(p,x3,z3,x,z0);
         x3 = x;
         z3 = (1.f-buffer[i2-1].mn)*h2;
 
         // draw extrema
         int z1 = (1.f-y1)*h2;
         int z2 = (1.f-y2)*h2;
-        if (drawExtrema) p.drawLine(x,z1,x,z2);
+        p.drawLine(x,z1,x,z2);
 
         // draw dot
         if (i1+1 == i2 && space >= dotSpaceThreshold) {
-            if (drawDots) p.drawPixmap(x-2,z1-2,dot);
+            p.drawPixmap(x-2,z1-2,dot);
         }
 
     }
@@ -292,6 +275,7 @@ void Editor::paintEvent(QPaintEvent *event)
         int x2 = w*(i.right-clipStart)/clipLength;
         p.fillRect(x1,0,std::max(x2-x1,1),h,QBrush(Qt::gray));
     }
+
     // draw tagging interval
     if (tagging) {
         int x1 = w*(tagBound1-clipStart)/clipLength;
@@ -320,6 +304,15 @@ void Editor::paintEvent(QPaintEvent *event)
         p.setPen(Qt::red);
         p.drawLine(c,0,c,h);
     }
+
+    // draw window boundary time labels
+    p.setPen(Qt::white);
+    QFont font("Liberation Sans");
+    p.setFont(font);
+
+    p.drawText(10,20, "start:  " + QString::number(clipStart)  + " s");
+    p.drawText(10,40, "length: " + QString::number(clipLength) + " s");
+
 
     p.end();
 }

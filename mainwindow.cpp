@@ -35,12 +35,6 @@ MainWindow::MainWindow(QWidget *parent) :
             this, SLOT(openLabelsDialog()));
     connect(ui->actionSaveLabels, SIGNAL(triggered()),
             this, SLOT(openSaveDialog()));
-    connect(ui->lines, SIGNAL(toggled(bool)),
-            ui->editor, SLOT(setLines(bool)));
-    connect(ui->extrema, SIGNAL(toggled(bool)),
-            ui->editor, SLOT(setExtrema(bool)));
-    connect(ui->dots, SIGNAL(toggled(bool)),
-            ui->editor, SLOT(setDots(bool)));
     connect(ui->silenceRegions, SIGNAL(toggled(bool)),
             ui->editor, SLOT(setSilenceRegions(bool)));
 }

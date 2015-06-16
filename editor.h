@@ -56,9 +56,6 @@ public:
 signals:
 
 public slots:
-    void setLines(bool b);
-    void setDots(bool b);
-    void setExtrema(bool b);
     void setSilenceRegions(bool b);
     void start();
 
@@ -86,16 +83,10 @@ private:
     MinMaxTree buffer;
     std::vector<float> audioBuffer;
 
-    const QBrush brush = QBrush(QColor(0,0,0));
-    const QPen pen = QPen();
     const float zoom = 0.1f;
     const int dotSpaceThreshold = 4;
 
     int oldX;
-
-    bool drawLines = true;
-    bool drawDots = true;
-    bool drawExtrema = true;
 
     float angle = 0.f;
 
@@ -133,6 +124,10 @@ private:
     QIODevice* pushAudio;
     QAudioOutput* audio;
     AudioDevice* audioDevice;
+
+    // minimum distance between labels
+    int rulerMinSpacing = 50;
+
 };
 
 #endif // EDITOR_H

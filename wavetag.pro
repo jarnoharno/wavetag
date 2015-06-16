@@ -26,3 +26,6 @@ HEADERS  += mainwindow.h \
     util.h
 
 FORMS    += mainwindow.ui
+
+RESOURCES += \
+    wavetag.qrc
