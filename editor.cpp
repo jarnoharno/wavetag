@@ -7,6 +7,7 @@
 #include <QTextStream>
 #include <QMessageBox>
 #include <QTimer>
+#include <QProgressDialog>
 #include <cmath>
 
 constexpr uchar Editor::dotData[];
@@ -311,18 +312,19 @@ void Editor::paintEvent(QPaintEvent *event)
     p.setFont(font);
 
     p.drawText(10,20, "start:  " + QString::number(clipStart)  + " s");
-    p.drawText(10,40, "length: " + QString::number(clipLength) + " s");
+    p.drawText(10,40, "end:    " + QString::number(t)  + " s");
+    p.drawText(10,60, "length: " + QString::number(clipLength) + " s");
     if (rewind) {
-        p.drawText(10,60, "cursor: " + QString::number(rewindCursor) + " s");
+        p.drawText(10,80, "cursor: " + QString::number(rewindCursor) + " s");
     } else {
-        p.drawText(10,60, "cursor: " + QString::number(visCursor) + " s");
+        p.drawText(10,80, "cursor: " + QString::number(visCursor) + " s");
     }
     if (tagging || erasing) {
         float l = tagBound1;
         float r = tagBound2;
         if (l > r) std::swap(l,r);
-        p.drawText(10,80, "start:  " + QString::number(l) + " s");
-        p.drawText(10,100, "length: " + QString::number(r-l) + " s");
+        p.drawText(10,100, "start:  " + QString::number(l) + " s");
+        p.drawText(10,120, "length: " + QString::number(r-l) + " s");
     }
 
     p.end();

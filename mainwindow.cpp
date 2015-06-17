@@ -12,6 +12,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     decoder = new QAudioDecoder(this);
+    filePath = QDir::currentPath();
+    labelsPath = QDir::currentPath();
 
     QAudioFormat desiredFormat;
     desiredFormat.setChannelCount(1);
@@ -56,10 +58,11 @@ void MainWindow::openFileDialog()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
                                                     tr("Open Audio File"),
-                                                    QDir::currentPath(),
+                                                    filePath,
                                                     tr("Audio Files (*.flac);;"
                                                        "All Files (*)"));
     if (fileName.isEmpty()) return;
+    filePath = fileName;
     open(fileName);
 }
 
@@ -67,20 +70,22 @@ void MainWindow::openLabelsDialog()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
                                                     tr("Open Labels File"),
-                                                    QDir::currentPath(),
+                                                    labelsPath,
                                                     tr("Label Files (*.txt);;"
                                                        "All Files (*)"));
     if (fileName.isEmpty()) return;
+    labelsPath = fileName;
     ui->editor->openLabels(fileName);
 }
 
 void MainWindow::openSaveDialog()
 {
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save Labels"),
-                                                    QDir::currentPath(),
+                                                    labelsPath,
                                                     tr("Label Files (*.txt);;"
                                                        "All Files (*)"));
     if (fileName.isEmpty()) return;
+    labelsPath = fileName;
     ui->editor->saveLabels(fileName);
 }
 

@@ -32,6 +32,9 @@ private:
     Ui::MainWindow *ui;
     QAudioDecoder *decoder;
     std::vector<float> tmpBuffer;
+
+    QString filePath;
+    QString labelsPath;
 };
 
 #endif // MAINWINDOW_H
